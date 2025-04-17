@@ -1,0 +1,404 @@
+openapi: 3.0.0
+info:
+  title: Ticket Management API
+  description: A simple API to manage support tickets
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []   # 🔒 Applied globally
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      security: []   # ❗️ Override: No auth required here 
+      requestBody:
+        description: Login to an account
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "agent1@hpe.com"
+                password:
+                  type: string
+                  example: "password1"
+      responses:
+          '200':
+            description: Login successful
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          '401':
+            description: Invalid credentials
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Invalid email or password."
+  /tickets/create:
+    post:
+      summary: Create a new ticket
+      requestBody:
+        description: Ticket details to create a new ticket
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Issue with server"
+                description:
+                  type: string
+                  example: "The server is not responding."
+      responses:
+        '201':
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: "Issue with server"
+                  description:
+                    type: string
+                    example: "The server is not responding."
+                  status:
+                    type: string
+                    enum:
+                      - Pending
+                      - Active
+                      - Monitoring
+                      - Closed
+                    example: "Pending"
+        '400':
+          description: Title and description are required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Title and description are required."
+  /tickets/getAll:
+    get:
+      summary: Get all tickets
+      responses:
+        '404':
+          description: No tickets found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No tickets found."
+        '200':
+          description: A list of all tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    title:
+                      type: string
+                      example: "Issue with server"
+                    description:
+                      type: string
+                      example: "The server is not responding."
+                    status:
+                      type: string
+                      enum:
+                        - Pending
+                        - Active
+                        - Monitoring
+                        - Closed
+                      example: "Pending"
+  /tickets/getById/{id}:
+    get:
+      summary: Get a specific ticket by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The ticket was found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: "Issue with server"
+                  description:
+                    type: string
+                    example: "The server is not responding."
+                  status:
+                    type: string
+                    enum:
+                      - Pending
+                      - Active
+                      - Monitoring
+                      - Closed
+                    example: "Pending"
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ticket not found."
+  /tickets/getOpen:
+    get:
+      summary: Get all open tickets
+      responses:
+        '200':
+          description: A list of open tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    title:
+                      type: string
+                      example: "Issue with server"
+                    description:
+                      type: string
+                      example: "The server is not responding."
+                    status:
+                      type: string
+                      enum:
+                        - Pending
+                        - Active
+                        - Monitoring
+                        - Closed
+                      example: "Pending"
+        '404':
+          description: No open tickets found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No open tickets found."
+  /tickets/getClosed:
+    get:
+      summary: Get all closed tickets
+      responses:
+        '200':
+          description: A list of closed tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    title:
+                      type: string
+                      example: "Issue with server"
+                    description:
+                      type: string
+                      example: "The server is not responding."
+                    status:
+                      type: string
+                      enum:
+                        - Pending
+                        - Active
+                        - Monitoring
+                        - Closed
+                      example: "Closed"
+        '404':
+          description: No closed tickets found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No closed tickets found."
+  /tickets/filter:
+    post:
+      summary: Filter tickets based on criteria
+      requestBody:
+        description: Criteria to filter tickets
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - Pending
+                    - Active
+                    - Monitoring
+                    - Closed
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: A list of filtered tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    title:
+                      type: string
+                      example: "Issue with server"
+                    description:
+                      type: string
+                      example: "The server is not responding."
+                    status:
+                      type: string
+                      enum:
+                        - Pending
+                        - Active
+                        - Monitoring
+                        - Closed
+                      example: "Pending"
+        '404':
+          description: No tickets found with the specified criteria
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No tickets found with the specified criteria."
+  /tickets/updateById/{id}:
+    patch:
+      summary: Update a ticket by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Fields to update on the ticket
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - Pending
+                    - Active
+                    - Monitoring
+                    - Closed
+      responses:
+        '200':
+          description: Ticket updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  title:
+                    type: string
+                    example: "Issue with server"
+                  description:
+                    type: string
+                    example: "The server is not responding."
+                  status:
+                    type: string
+                    enum:
+                      - Pending
+                      - Active
+                      - Monitoring
+                      - Closed
+                    example: "Active"
+        '400':
+          description: Invalid status provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid status. Must be one of: Pending, Active, Monitoring, Closed."
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Ticket not found."
