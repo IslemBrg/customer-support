@@ -1,10 +1,12 @@
 // routes/ticketRoutes.js
-const {JWT_SECRET, Roles} = require('../utils/AuthUtils.js');
-const express = require('express');
-const bcrypt = require('bcryptjs');
+import express from 'express';
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs';
+import { JWT_SECRET, Roles } from '../utils/AuthUtils.js';
+import { TicketStatus } from '../utils/TicketStatus.js';
+
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const {TicketStatus} = require('../utils/TicketStatus.js');
+
 const Agents = [
     { id: 1, name: 'Agent 1', role: Roles.AGENT, email: 'agent1@hpe.com', password: bcrypt.hashSync('password1', 8) },
     { id: 2, name: 'Agent 2', role: Roles.AGENT, email: 'agent2@hpe.com', password: bcrypt.hashSync('password2', 8) },
@@ -65,4 +67,4 @@ router.get('/getById/:id', authenticateToken, (req, res) => {
 
 // Other ticket routes can go here (same as before)
 
-module.exports = router;
+export default router;

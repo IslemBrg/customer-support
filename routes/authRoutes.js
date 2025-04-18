@@ -1,11 +1,12 @@
 // routes/authRoutes.js
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+import express from 'express';
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs';
+import { JWT_SECRET, Roles } from '../utils/AuthUtils.js';
 
 const router = express.Router();
 
-const { JWT_SECRET, Roles } = require('../utils/AuthUtils.js');
+
 
 const Agents = [
     { id: 1, name: 'Agent 1', role: Roles.AGENT, email: 'agent1@hpe.com', password: bcrypt.hashSync('password1', 8) },
@@ -40,4 +41,4 @@ router.post('/login', (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

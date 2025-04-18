@@ -1,14 +1,17 @@
 {
-  "name": "support-ticket",
+  "name": "customer-support",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Customer support application with Express.js",
+  "type": "module",
+  "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "express": "^5.1.0",
@@ -17,5 +20,8 @@
     "support-ticket": "file:",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }

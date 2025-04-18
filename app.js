@@ -1,10 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
+import express from 'express';
+import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import authRoutes from './routes/authRoutes.js';
+import ticketRoutes from './routes/ticketRoutes.js';
+
 const app = express();
 const PORT = 3000;
 const DATABASE_URL = 'mongodb+srv://islem:islem123@support-ticket.1qcqtby.mongodb.net/?retryWrites=true&w=majority&appName=Support-Ticket';
-const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
+
 const swaggerDocument = YAML.load('./swagger.yaml');
 mongoose.connect(DATABASE_URL, {
     useNewUrlParser: true,
@@ -13,8 +17,7 @@ mongoose.connect(DATABASE_URL, {
 .then(() => console.log("✅ Connected to MongoDB Atlas"))
 .catch(err => console.error("❌ MongoDB connection error:", err));
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const ticketRoutes = require('./routes/ticketRoutes');
+
 
 // Use Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
