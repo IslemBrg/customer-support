@@ -1,1 +1,0 @@
-export const DATABASE_URL = 'mongodb+srv://islem:islem123@support-ticket.1qcqtby.mongodb.net/?retryWrites=true&w=majority&appName=Support-Ticket';

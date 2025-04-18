@@ -4,10 +4,11 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import authRoutes from './routes/authRoutes.js';
 import ticketRoutes from './routes/ticketRoutes.js';
+import Config from './utils/Config.js';
 
 const app = express();
 const PORT = 3000;
-const DATABASE_URL = 'mongodb+srv://islem:islem123@support-ticket.1qcqtby.mongodb.net/?retryWrites=true&w=majority&appName=Support-Ticket';
+const DATABASE_URL = Config.databaseUrl;
 
 const swaggerDocument = YAML.load('./swagger.yaml');
 mongoose.connect(DATABASE_URL, {

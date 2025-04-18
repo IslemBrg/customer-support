@@ -2,9 +2,10 @@
 import express from 'express';
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs';
-import { JWT_SECRET, Roles } from '../utils/AuthUtils.js';
-import { TicketStatus } from '../utils/TicketStatus.js';
-
+import { Roles } from '../utils/AuthUtils.js';
+import { TicketStatus } from '../utils/TicketUtils.js';
+import Config from '../utils/Config.js';
+const JWT_SECRET = Config.jwtSecret;
 const router = express.Router();
 
 const Agents = [

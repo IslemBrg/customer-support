@@ -11,10 +11,106 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  schemas:
+    UserRegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          format: password
+          example: "supersecurepassword123"
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User registered successfully."
 
 security:
   - bearerAuth: []   # 🔒 Applied globally
+
+
 paths:
+  /auth/admin/seed:
+    get:
+      tags:
+        - Authentication
+      summary: Seed the database with an Admin user
+      security: []   # ❗️ Override: No auth required here
+      description: |
+        Seeds the system with a default Admin account if one doesn't already exist.
+        Useful for initial setup or development environments.
+      responses:
+        '201':
+          description: Admin seeded successfully
+        '409':
+          description: Admin already exists
+        '500':
+          description: Server error
+  /auth/customer/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new customer account
+      security: []   # ❗️ Override: No auth required here 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Missing fields
+        '409':
+          description: User already exists
+        '500':
+          description: Server error
+
+  /auth/agent/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new agent account (Admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Missing fields
+        '403':
+          description: Access denied (only Admin can register agents)
+        '409':
+          description: User already exists
+        '500':
+          description: Server error
   /auth/login:
     post:
       summary: User login
