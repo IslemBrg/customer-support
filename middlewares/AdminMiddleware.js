@@ -1,4 +1,4 @@
-import checkRole from "./RoleMiddleware";
+import checkRole from "./RoleMiddleware.js";
 
 const adminMiddleware = checkRole('Admin');
 
