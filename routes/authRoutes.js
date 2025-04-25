@@ -7,6 +7,7 @@ import Config from '../utils/Config.js';
 const JWT_SECRET = Config.jwtSecret;
 const router = express.Router();
 import User from '../models/User.js';
+import adminMiddleware from '../middlewares/AdminMiddleware.js'
 
 
 // Helper function to generate JWT token
@@ -67,7 +68,7 @@ router.post('/customer/register', async (req, res) => {
 });
 
 // register agent requires admin role
-router.post('/agent/register', authenticateToken, async (req, res) => {
+router.post('/agent/register', adminMiddleware, async (req, res) => {
     try{
         if (req.user.role !== Roles.ADMIN) {
             return res.status(403).json({ message: 'Access denied.' });

@@ -30,7 +30,67 @@ components:
           type: string
           format: password
           example: "supersecurepassword123"
-
+    Ticket:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the ticket
+          example: 60d21b4667d0d8992e610c85
+        title:
+          type: string
+          description: Title of the ticket
+          example: Cannot access customer portal
+        description:
+          type: string
+          description: Detailed description of the issue
+          example: Getting 404 error when trying to access the customer portal
+        status:
+          type: string
+          description: Current status of the ticket
+          enum: [pending, active, monitoring, closed]
+          example: active
+        customer:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 60d21b4667d0d8992e610c86
+            name:
+              type: string
+              example: John Doe
+            email:
+              type: string
+              example: john.doe@example.com
+        agent:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 60d21b4667d0d8992e610c87
+            name:
+              type: string
+              example: Jane Smith
+        createdAt:
+          type: string
+          format: date-time
+          example: 2023-05-17T14:32:22.001Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2023-05-18T09:12:45.234Z
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Failed to fetch tickets
+        error:
+          type: string
+          example: Internal server error
     SuccessResponse:
       type: object
       properties:
@@ -204,44 +264,88 @@ paths:
                     example: "Title and description are required."
   /tickets/getAll:
     get:
-      summary: Get all tickets
+      summary: Retrieve all tickets with pagination
+      description: Returns a paginated list of tickets with optional sorting
+      tags:
+        - Tickets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starting from 1)
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of tickets per page
+          required: false
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: sort
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            default: createdAt
+            enum: [createdAt, status]
+        - name: order
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            default: desc
+            enum: [asc, desc]
       responses:
-        '404':
-          description: No tickets found
+        '200':
+          description: Successful operation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: "No tickets found."
-        '200':
-          description: A list of all tickets
+                  currentPage:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 5
+                  totalItems:
+                    type: integer
+                    example: 48
+                  itemsPerPage:
+                    type: integer
+                    example: 10
+                  tickets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ticket'
+        '401':
+          description: Unauthorized - User is not authenticated
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                      example: 1
-                    title:
-                      type: string
-                      example: "Issue with server"
-                    description:
-                      type: string
-                      example: "The server is not responding."
-                    status:
-                      type: string
-                      enum:
-                        - Pending
-                        - Active
-                        - Monitoring
-                        - Closed
-                      example: "Pending"
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User is not an admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /tickets/getById/{id}:
     get:
       summary: Get a specific ticket by ID
