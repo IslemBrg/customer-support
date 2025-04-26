@@ -12,7 +12,7 @@ import adminMiddleware from '../middlewares/AdminMiddleware.js'
 
 // Helper function to generate JWT token
 const generateToken = (user) => {
-    return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
 };
 
 // Authentication Middleware

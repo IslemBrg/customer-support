@@ -17,9 +17,8 @@ const checkRole = (requiredRole) => {
       const token = authHeader.split(' ')[1];
       
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      const hasRequiredRole = decoded.roles && 
-        decoded.roles.some(role => requiredRole === role);
+
+      const hasRequiredRole = requiredRole === decoded.role;
       
       if (!hasRequiredRole) {
         return res.status(403).json({
