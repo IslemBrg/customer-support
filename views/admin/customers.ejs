@@ -16,7 +16,6 @@
                 <th>Email</th>
                 <th>Tickets</th>
                 <th>Joined Date</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -33,13 +32,6 @@
                       <span class="badge rounded-pill bg-primary"><%= customer.ticketCount %></span>
                     </td>
                     <td><%= new Date(customer.createdAt).toLocaleDateString() %></td>
-                    <td>
-                      <div class="btn-group">
-                        <a href="#" class="btn btn-sm btn-primary view-customer" data-id="<%= customer._id %>">
-                          <i class="bi bi-eye"></i>
-                        </a>
-                      </div>
-                    </td>
                   </tr>
                 <% }); %>
               <% } %>
@@ -79,31 +71,6 @@
               </li>
             </ul>
           </nav>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- View Customer Modal -->
-  <div class="modal fade" id="viewCustomerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Customer Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div id="customerDetails">
-            <!-- Customer details will be loaded here via AJAX -->
-            <div class="text-center">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
