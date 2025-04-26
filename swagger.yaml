@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Ticket Management API
+  title: Hewlett Packard Enterprise SFDC API
   version: 1.0.0
   description: API documentation for Authentication and Ticket Management.
 
