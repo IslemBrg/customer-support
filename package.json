@@ -23,6 +23,7 @@
     "express-ejs-layouts": "^2.5.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2",
+    "node-mailjet": "^6.0.8",
     "support-ticket": "file:",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"

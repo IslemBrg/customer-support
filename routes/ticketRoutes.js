@@ -119,14 +119,14 @@ router.patch('/updateByNumber/:number', agentmiddlewhere, async (req, res) => {
     }
 });
 
-router.delete('/deleteByNumber/:number', agentmiddlewhere, async (req, res) => {
+router.delete('/CloseByNumber/:number', agentmiddlewhere, async (req, res) => {
     const ticketNumber = req.params.number;
     try {
-        const deletedTicket = await TicketService.deleteTicket(ticketNumber);
+        const deletedTicket = await TicketService.closeTicket(ticketNumber);
         if (!deletedTicket) return res.status(404).json({ message: 'Ticket not found.' });
-        res.json({ message: 'Ticket deleted successfully.' });
+        res.json({ message: 'Ticket closed successfully.' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting ticket.', error: error.message });
+        res.status(500).json({ message: 'Error closing ticket.', error: error.message });
     }
 });
 

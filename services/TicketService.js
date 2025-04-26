@@ -2,6 +2,8 @@
 import Ticket from '../models/Ticket.js';
 import { TicketStatus } from '../utils/TicketUtils.js';
 import UserService from './UserService.js';
+import sendMail from '../utils/Mailjet.js';
+import User from '../models/User.js';
 
 class TicketService {
   async getAllTickets(sort = {'createdAt': -1}, page = 1, limit = 10) {
@@ -51,9 +53,11 @@ class TicketService {
       existingTicket = await Ticket.findOne({ticketNumber: ticketNumber});
     }
     let processedTicketData = {...ticketData, ticketNumber, status: TicketStatus.PENDING, agent: leastOccupiedAgent}
-    
+    const customer = await User.findById(ticketData.customer);
     const ticket = new Ticket(processedTicketData);
     console.log(ticket);
+    await sendMail(customer.email, 6934362, {"issue": ticket.title, "name": customer.name, "ticket_number": ticket.ticketNumber});
+    await sendMail(leastOccupiedAgent.email, 6934377, {"issue": ticket.title, "name": leastOccupiedAgent.name, "ticket_number": ticket.ticketNumber, "description": ticket.description, "customer_email": customer.email});
     await ticket.save();
     
     return ticket;
@@ -62,7 +66,7 @@ class TicketService {
   // Update a ticket
   async updateTicket(ticketNumber, updateData) {
     const processedData = this.validateAndProcessUpdateData(updateData);
-    const ticket = await Ticket.updateOne(
+    const ticket = await Ticket.findOneAndUpdate(
       { ticketNumber: ticketNumber },
       { $set: processedData },
       { new: true }
@@ -70,6 +74,15 @@ class TicketService {
     .populate('agent');
 
     
+
+    // if the status is changed send email.
+    if (processedData.status && processedData.status === TicketStatus.CLOSED) {
+      await sendMail(ticket.customer.email, 6934380, {"name": ticket.customer.name, "ticket_number": ticket.ticketNumber});
+    }
+    if (processedData.status && processedData.status !== TicketStatus.CLOSED) {
+      await sendMail(ticket.customer.email, 6934398, {"name": ticket.customer.name, "ticket_number": ticket.ticketNumber, "status": processedData.status});
+    }
+
     if (!ticket) {
       throw new Error('Ticket not found');
     }
@@ -78,8 +91,15 @@ class TicketService {
   }
   
   // Delete a ticket
-  async deleteTicket(ticketNumber) {
-    const ticket = await Ticket.findOneAndDelete({ ticketNumber: ticketNumber });
+  async closeTicket(ticketNumber) {
+    const ticket = await Ticket.findOneAndUpdate(
+      { ticketNumber: ticketNumber },
+      { $set: { status: TicketStatus.CLOSED } },
+      { new: true }
+    ).populate('customer')
+    .populate('agent');
+
+    await sendMail(ticket.customer.email, 6934380, {"name": ticket.customer.name, "ticket_number": ticket.ticketNumber});
     
     if (!ticket) {
       throw new Error('Ticket not found');
