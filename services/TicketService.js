@@ -28,8 +28,8 @@ class TicketService {
   }
   
   // Get a single ticket by ID
-  async getTicketById(ticketId) {
-    const ticket = await findById(ticketId)
+  async getTicketByNum(ticketNumber) {
+    const ticket = await Ticket.findOne({ticketNumber: ticketNumber})
     .populate('customer')
     .populate('agent');
     
@@ -43,23 +43,32 @@ class TicketService {
   // Create a new ticket
   async createTicket(ticketData) {
     let leastOccupiedAgent = await UserService.getLeastOccupiedAgent();
-    let processedTicketData = {...ticketData, status: TicketStatus.PENDING, agent: leastOccupiedAgent}
+    // get random 10 digit int that does not exist in the database
+    let ticketNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    let existingTicket = await Ticket.findOne({ticketNumber: ticketNumber});
+    while (existingTicket) {
+      ticketNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+      existingTicket = await Ticket.findOne({ticketNumber: ticketNumber});
+    }
+    let processedTicketData = {...ticketData, ticketNumber, status: TicketStatus.PENDING, agent: leastOccupiedAgent}
     
     const ticket = new Ticket(processedTicketData);
+    console.log(ticket);
     await ticket.save();
     
     return ticket;
   }
 
   // Update a ticket
-  async updateTicket(ticketId, updateData) {
+  async updateTicket(ticketNumber, updateData) {
     const processedData = this.validateAndProcessUpdateData(updateData);
-    
-    const ticket = await Ticket.findByIdAndUpdate(
-      ticketId, 
-      processedData,
-      { new: true, runValidators: true }
-    );
+    const ticket = await Ticket.updateOne(
+      { ticketNumber: ticketNumber },
+      { $set: processedData },
+      { new: true }
+    ).populate('customer')
+    .populate('agent');
+
     
     if (!ticket) {
       throw new Error('Ticket not found');
@@ -69,8 +78,8 @@ class TicketService {
   }
   
   // Delete a ticket
-  async deleteTicket(ticketId) {
-    const ticket = await Ticket.findByIdAndDelete(ticketId);
+  async deleteTicket(ticketNumber) {
+    const ticket = await Ticket.findOneAndDelete({ ticketNumber: ticketNumber });
     
     if (!ticket) {
       throw new Error('Ticket not found');
@@ -81,7 +90,7 @@ class TicketService {
   }
   
   validateAndProcessUpdateData(updateData) {
-    const allowedUpdates = ['status', 'priority', 'description'];
+    const allowedUpdates = ['status', 'priority', 'description', 'title'];
     const updates = {};
     
     Object.keys(updateData).forEach(key => {
@@ -91,6 +100,20 @@ class TicketService {
     });
     
     return updates;
+  }
+
+  // filter tickets by everything
+  async filterTickets(filter) {
+    const tickets = await Ticket.find(filter)
+    .populate('customer')
+    .populate('agent');
+
+    if (!tickets) {
+      throw new Error('No tickets found');
+    }
+
+    return tickets;
+
   }
   
 }

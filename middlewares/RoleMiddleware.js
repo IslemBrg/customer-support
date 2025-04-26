@@ -18,7 +18,7 @@ const checkRole = (requiredRole) => {
       
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      const hasRequiredRole = requiredRole === decoded.role;
+      const hasRequiredRole = requiredRole === decoded.role || (decoded.role === 'Admin' && requiredRole !== 'Customer');
       
       if (!hasRequiredRole) {
         return res.status(403).json({

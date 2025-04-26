@@ -7,7 +7,6 @@ class UserService {
 
     async getLeastOccupiedAgent() {
         let agents = await User.find({role: Roles.AGENT});
-        console.log(agents);
         let tickets = await Ticket.find({status : [TicketStatus.ACTIVE, TicketStatus.MONITORING, TicketStatus.PENDING]});
         let agentAgenda = {};
         agents.forEach(agent => {
