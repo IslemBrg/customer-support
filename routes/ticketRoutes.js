@@ -86,7 +86,7 @@ router.get('/getAll', adminMiddleware, async (req, res) => {
         sortObj[sort] = order;
         
         // Execute query with pagination
-        let ticketPageable = TicketService.getAllTickets(sortObj, page, limit);
+        let ticketPageable = await TicketService.getAllTickets(sortObj, page, limit);
         // Send response
         res.status(200).json(ticketPageable);
       } catch (error) {

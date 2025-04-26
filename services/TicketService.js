@@ -7,14 +7,14 @@ class TicketService {
   async getAllTickets(sort = {'createdAt': -1}, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     
-    const tickets = await find()
+    const tickets = await Ticket.find()
     .populate('customer')
     .populate('agent')
     .sort(sort)
     .skip(skip)
     .limit(limit);
     
-    const totalTickets = await countDocuments(filters);
+    const totalTickets = await Ticket.countDocuments();
     
     return {
     tickets: tickets,
@@ -42,8 +42,9 @@ class TicketService {
   
   // Create a new ticket
   async createTicket(ticketData) {
-    let leastOccupiedAgent = UserService.getLeastOccupiedAgent();
-    processedTicketData = {...ticketData, status: TicketStatus.PENDING, agent: leastOccupiedAgent}
+    let leastOccupiedAgent = await UserService.getLeastOccupiedAgent();
+    let processedTicketData = {...ticketData, status: TicketStatus.PENDING, agent: leastOccupiedAgent}
+    
     const ticket = new Ticket(processedTicketData);
     await ticket.save();
     
