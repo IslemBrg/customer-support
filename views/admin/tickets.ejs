@@ -1,0 +1,293 @@
+<!-- views/admin/tickets.ejs -->
+<div class="tickets-container">
+    <div class="card mb-4">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Tickets</h5>
+        <div>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+            <i class="bi bi-funnel me-1"></i> Filter
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Customer</th>
+                <th>Agent</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (tickets.length === 0) { %>
+                <tr>
+                  <td colspan="7" class="text-center">No tickets found</td>
+                </tr>
+              <% } else { %>
+                <% tickets.forEach(ticket => { %>
+                  <tr>
+                    <td><%= ticket._id.toString().substring(0, 8) %>...</td>
+                    <td><%= ticket.title %></td>
+                    <td><%= ticket.customer ? ticket.customer.name : 'N/A' %></td>
+                    <td><%= ticket.agent ? ticket.agent.name : 'Unassigned' %></td>
+                    <td>
+                      <% if (ticket.status === 'Pending') { %>
+                        <span class="badge rounded-pill bg-warning text-dark">Pending</span>
+                      <% } else if (ticket.status === 'Active') { %>
+                        <span class="badge rounded-pill bg-success">Active</span>
+                      <% } else if (ticket.status === 'Monitoring') { %>
+                        <span class="badge rounded-pill bg-info text-dark">Monitoring</span>
+                      <% } else if (ticket.status === 'Closed') { %>
+                        <span class="badge rounded-pill bg-secondary">Closed</span>
+                      <% } %>
+                    </td>
+                    <td><%= new Date(ticket.createdAt).toLocaleDateString() %></td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#ticketDetailModal" 
+                          data-ticket-id="<%= ticket._id %>" 
+                          data-ticket-title="<%= ticket.title %>" 
+                          data-ticket-description="<%= ticket.description %>"
+                          data-ticket-status="<%= ticket.status %>"
+                          data-ticket-customer="<%= ticket.customer ? ticket.customer.name : 'N/A' %>"
+                          data-ticket-agent="<%= ticket.agent ? ticket.agent.name : 'Unassigned' %>">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#assignAgentModal" data-ticket-id="<%= ticket._id %>">
+                          <i class="bi bi-person-plus"></i>
+                        </button>
+                        <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#updateStatusModal" data-ticket-id="<%= ticket._id %>" data-ticket-status="<%= ticket.status %>">
+                          <i class="bi bi-arrow-repeat"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-white">
+        <nav aria-label="Tickets pagination">
+          <ul class="pagination justify-content-center mb-0">
+            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+              <a class="page-link" href="/admin/tickets?page=<%= currentPage - 1 %>&limit=<%= itemsPerPage %>">Previous</a>
+            </li>
+            
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="/admin/tickets?page=<%= i %>&limit=<%= itemsPerPage %>"><%= i %></a>
+              </li>
+            <% } %>
+            
+            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+              <a class="page-link" href="/admin/tickets?page=<%= currentPage + 1 %>&limit=<%= itemsPerPage %>">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Ticket Detail Modal -->
+  <div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-labelledby="ticketDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ticketDetailModalLabel">Ticket Detail</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h4 id="ticketTitle"></h4>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>Status:</strong> <span id="ticketStatus"></span></p>
+              <p><strong>Customer:</strong> <span id="ticketCustomer"></span></p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Agent:</strong> <span id="ticketAgent"></span></p>
+              <p><strong>ID:</strong> <span id="ticketId"></span></p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Description</div>
+            <div class="card-body">
+              <p id="ticketDescription"></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Assign Agent Modal -->
+  <div class="modal fade" id="assignAgentModal" tabindex="-1" aria-labelledby="assignAgentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="assignAgentModalLabel">Assign Agent</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="assignAgentForm" action="/admin/tickets/assign" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="assignTicketId" name="ticketId">
+            <div class="mb-3">
+              <label for="agentSelect" class="form-label">Select Agent</label>
+              <select class="form-select" id="agentSelect" name="agentId" required>
+                <option value="">Select an agent</option>
+                <!-- This would be populated with agents from the database -->
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Assign</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Update Status Modal -->
+  <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateStatusModalLabel">Update Status</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="updateStatusForm" action="/admin/tickets/status" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="statusTicketId" name="ticketId">
+            <div class="mb-3">
+              <label for="statusSelect" class="form-label">Select Status</label>
+              <select class="form-select" id="statusSelect" name="status" required>
+                <option value="Pending">Pending</option>
+                <option value="Active">Active</option>
+                <option value="Monitoring">Monitoring</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Filter Modal -->
+  <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="filterModalLabel">Filter Tickets</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="filterForm" action="/admin/tickets/filter" method="GET">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="statusFilter" class="form-label">Status</label>
+              <select class="form-select" id="statusFilter" name="status">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Active">Active</option>
+                <option value="Monitoring">Monitoring</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="agentFilter" class="form-label">Agent</label>
+              <select class="form-select" id="agentFilter" name="agent">
+                <option value="">All Agents</option>
+                <option value="unassigned">Unassigned</option>
+                <!-- This would be populated with agents from the database -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="dateFromFilter" class="form-label">Created From</label>
+              <input type="date" class="form-control" id="dateFromFilter" name="dateFrom">
+            </div>
+            <div class="mb-3">
+              <label for="dateToFilter" class="form-label">Created To</label>
+              <input type="date" class="form-control" id="dateToFilter" name="dateTo">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load agent list for assign modal
+      fetch('/admin/api/agents')
+        .then(response => response.json())
+        .then(agents => {
+          const agentSelect = document.getElementById('agentSelect');
+          const agentFilter = document.getElementById('agentFilter');
+          
+          agents.forEach(agent => {
+            const option = document.createElement('option');
+            option.value = agent._id;
+            option.textContent = agent.name;
+            agentSelect.appendChild(option);
+            
+            const filterOption = option.cloneNode(true);
+            agentFilter.appendChild(filterOption);
+          });
+        });
+      
+      // Ticket detail modal
+      const ticketDetailModal = document.getElementById('ticketDetailModal');
+      ticketDetailModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-ticket-id');
+        const title = button.getAttribute('data-ticket-title');
+        const description = button.getAttribute('data-ticket-description');
+        const status = button.getAttribute('data-ticket-status');
+        const customer = button.getAttribute('data-ticket-customer');
+        const agent = button.getAttribute('data-ticket-agent');
+        
+        document.getElementById('ticketId').textContent = id;
+        document.getElementById('ticketTitle').textContent = title;
+        document.getElementById('ticketDescription').textContent = description;
+        document.getElementById('ticketStatus').textContent = status;
+        document.getElementById('ticketCustomer').textContent = customer;
+        document.getElementById('ticketAgent').textContent = agent;
+      });
+      
+      // Assign agent modal
+      const assignAgentModal = document.getElementById('assignAgentModal');
+      assignAgentModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const ticketId = button.getAttribute('data-ticket-id');
+        document.getElementById('assignTicketId').value = ticketId;
+      });
+      
+      // Update status modal
+      const updateStatusModal = document.getElementById('updateStatusModal');
+      updateStatusModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const ticketId = button.getAttribute('data-ticket-id');
+        const status = button.getAttribute('data-ticket-status');
+        document.getElementById('statusTicketId').value = ticketId;
+        document.getElementById('statusSelect').value = status;
+      });
+    });
+  </script>

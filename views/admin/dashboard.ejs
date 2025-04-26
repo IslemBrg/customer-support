@@ -1,0 +1,176 @@
+<!-- views/admin/dashboard.ejs -->
+<div class="dashboard-stats">
+  <div class="row">
+    <div class="col-md-3 mb-4">
+      <div class="card bg-primary text-white h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase fw-bold mb-1">Total Tickets</h6>
+              <h2 class="mb-0"><%= ticketCount %></h2>
+            </div>
+            <i class="bi bi-ticket-detailed fs-1"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="card bg-warning text-dark h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase fw-bold mb-1">Pending</h6>
+              <h2 class="mb-0"><%= pendingCount %></h2>
+            </div>
+            <i class="bi bi-hourglass-split fs-1"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="card bg-success text-white h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase fw-bold mb-1">Active</h6>
+              <h2 class="mb-0"><%= activeCount %></h2>
+            </div>
+            <i class="bi bi-play-circle fs-1"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+      <div class="card bg-info text-dark h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-uppercase fw-bold mb-1">Closed</h6>
+              <h2 class="mb-0"><%= closedCount %></h2>
+            </div>
+            <i class="bi bi-check-circle fs-1"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Ticket Status Distribution</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-white">
+          <h5 class="card-title mb-0">Users Overview</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-6">
+              <div class="py-4">
+                <h3 class="display-4 fw-bold text-primary"><%= agentCount %></h3>
+                <p class="mb-0">Total Agents</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="py-4">
+                <h3 class="display-4 fw-bold text-success"><%= customerCount %></h3>
+                <p class="mb-0">Total Customers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-12 mb-4">
+      <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">Recent Tickets</h5>
+          <a href="/admin/tickets" class="btn btn-sm btn-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Title</th>
+                  <th>Customer</th>
+                  <th>Agent</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (recentTickets.length === 0) { %>
+                  <tr>
+                    <td colspan="5" class="text-center">No tickets found</td>
+                  </tr>
+                <% } else { %>
+                  <% recentTickets.forEach(ticket => { %>
+                    <tr>
+                      <td><%= ticket.title %></td>
+                      <td><%= ticket.customer ? ticket.customer.name : 'N/A' %></td>
+                      <td><%= ticket.agent ? ticket.agent.name : 'Unassigned' %></td>
+                      <td>
+                        <% if (ticket.status === 'Pending') { %>
+                          <span class="badge rounded-pill bg-warning text-dark">Pending</span>
+                        <% } else if (ticket.status === 'Active') { %>
+                          <span class="badge rounded-pill bg-success">Active</span>
+                        <% } else if (ticket.status === 'Monitoring') { %>
+                          <span class="badge rounded-pill bg-info text-dark">Monitoring</span>
+                        <% } else if (ticket.status === 'Closed') { %>
+                          <span class="badge rounded-pill bg-secondary">Closed</span>
+                        <% } %>
+                      </td>
+                      <td><%= new Date(ticket.createdAt).toLocaleDateString() %></td>
+                    </tr>
+                  <% }); %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Status distribution chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Pending', 'Active', 'Monitoring', 'Closed'],
+        datasets: [{
+          data: [<%= pendingCount %>, <%= activeCount %>, <%= monitoringCount %>, <%= closedCount %>],
+          backgroundColor: ['#ffc107', '#198754', '#0dcaf0', '#6c757d'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  });
+</script>
